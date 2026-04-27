@@ -17,3 +17,6 @@ __pycache__/
 *.log
 *sublime*
 *.exe
+
+# Added entries (1 items)
+temp/

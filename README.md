@@ -263,6 +263,95 @@ go build ./cmd/config-get
 
 MIT © 2026 Hadi Cahyadi
 
+---
+
+## Hot Reload
+
+config-get supports four hot-reload strategies. All are concurrency-safe and use a **snapshot model** — every change event delivers a consistent, immutable copy of the config so there are never torn reads.
+
+### 1. `Watch()` — mtime polling, all platforms
+
+A background goroutine polls the file's mtime every N seconds and fires callbacks on change.
+
+```go
+cfg := configget.New("myapp.toml", "myapp", configget.Options{})
+
+w, err := cfg.Watch(configget.WatchOptions{
+    Interval: 5 * time.Second,                  // default: 2s, min: 100ms
+    OnError:  func(e error) { log.Println(e) }, // optional; default: slog.Warn
+})
+defer w.Stop() // always stop to release the goroutine
+
+// Register one or more callbacks — each runs in its own goroutine
+w.OnChange(func(ev configget.ChangeEvent) {
+    log.Println("config changed:", ev.Path)
+    host := ev.Snapshot.Get("DB_HOST")
+    port := ev.Snapshot.Get("DB_PORT")
+    // host and port are guaranteed to be from the SAME file version (no torn reads)
+})
+```
+
+### 2. `WatchSignal()` — SIGHUP, Unix/macOS only
+
+The classic Unix reload pattern. Send `SIGHUP` to the process to trigger a reload.
+
+```go
+sw := cfg.WatchSignal(configget.WatchOptions{
+    OnError: func(e error) { log.Println("reload error:", e) },
+})
+defer sw.Stop()
+
+sw.OnChange(func(ev configget.ChangeEvent) {
+    log.Println("reloaded via SIGHUP")
+})
+```
+
+```bash
+kill -HUP $(pidof myapp)   # trigger reload from shell
+```
+
+> On Windows, `WatchSignal()` is a no-op. Use `Watch()` instead.
+
+### 3. `cfg.Reload()` — explicit manual reload
+
+Call `Reload()` from any goroutine — on an HTTP admin endpoint, a timer, etc.
+
+```go
+http.HandleFunc("/admin/reload", func(w http.ResponseWriter, r *http.Request) {
+    if err := cfg.Reload(); err != nil {
+        http.Error(w, err.Error(), 500)
+        return
+    }
+    fmt.Fprintln(w, "config reloaded OK")
+})
+```
+
+### 4. `cfg.Snapshot()` — torn-read-safe atomic view
+
+When reading **multiple related keys**, use `Snapshot()` to guarantee all values come from the same file version.
+
+```go
+// BAD — two reads may straddle a concurrent reload
+host := cfg.String("DB_HOST", "")
+port := cfg.Int("DB_PORT", 0) // might be from a DIFFERENT version!
+
+// GOOD — atomic snapshot guarantees consistent view
+snap, err := cfg.Snapshot()
+host := snap.Get("DB_HOST")
+port := snap.Get("DB_PORT") // same version as host, always
+```
+
+`ChangeEvent.Snapshot` (delivered to `OnChange` callbacks) is already a consistent snapshot.
+
+### Strategy Comparison
+
+| Strategy | Automatic? | Platform | Best for |
+|---|---|---|---|
+| `Watch()` polling | ✅ background | All | Production — zero extra deps |
+| `WatchSignal()` SIGHUP | ✅ on signal | Unix only | Long-running daemons |
+| `Reload()` explicit | Manual | All | Admin endpoints, timers |
+| `Snapshot()` | N/A | All | Torn-read-safe multi-key reads |
+
 
 ## 👤 Author
         

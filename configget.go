@@ -24,6 +24,16 @@
 //	host := cfg.String("DB_HOST", "localhost")
 //	port := cfg.Int("DB_PORT", 5432)
 //	debug := cfg.Bool("DEBUG", false)
+//
+//	// Hot-reload: mtime polling (all platforms)
+//	w, _ := cfg.Watch(configget.WatchOptions{Interval: 5 * time.Second})
+//	w.OnChange(func(ev configget.ChangeEvent) { /* use ev.Snapshot */ })
+//	defer w.Stop()
+//
+//	// Hot-reload: SIGHUP (Unix only; no-op on Windows)
+//	sw := cfg.WatchSignal(configget.WatchOptions{})
+//	sw.OnChange(func(ev configget.ChangeEvent) { /* use ev.Snapshot */ })
+//	defer sw.Stop()
 package configget
 
 import (
@@ -440,6 +450,22 @@ func (c *ConfigGet) Bool(key string, defaultVal bool) bool {
 		return defaultVal
 	}
 	return b
+}
+
+
+// Snapshot returns an immutable, goroutine-safe copy of the current config
+// data. Unlike calling individual Get* methods, a Snapshot guarantees all
+// values come from the same file version — there are no torn reads.
+//
+//	snap, err := cfg.Snapshot()
+//	host := snap.Get("DB_HOST")
+//	port := snap.Get("DB_PORT")  // same file version as host
+func (c *ConfigGet) Snapshot() (Snapshot, error) {
+	data, err := c.Data()
+	if err != nil {
+		return Snapshot{}, err
+	}
+	return newSnapshot(map[string]interface{}(data)), nil
 }
 
 // MustString returns the string value or panics if the key is absent.
