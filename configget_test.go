@@ -17,10 +17,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cumulus13/config-get/configget"
-	"github.com/cumulus13/config-get/internal/cast"
-	"github.com/cumulus13/config-get/internal/parser"
-	"github.com/cumulus13/config-get/internal/platform"
+	"github.com/cumulus13/go-config-get/configget"
+	"github.com/cumulus13/go-config-get/cast"
+	"github.com/cumulus13/go-config-get/parser"
+	"github.com/cumulus13/go-config-get/platform"
 )
 
 // ---------------------------------------------------------------------------

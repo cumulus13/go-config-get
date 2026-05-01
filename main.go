@@ -26,7 +26,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cumulus13/config-get/configget"
+	"github.com/cumulus13/go-config-get/configget"
 )
 
 func main() {
