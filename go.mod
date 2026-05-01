@@ -1,4 +1,4 @@
-module github.com/cumulus13/config-get
+module github.com/cumulus13/go-config-get
 
 go 1.22
 
