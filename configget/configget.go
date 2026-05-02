@@ -1,8 +1,11 @@
-// File: configget.go
+// File: configget/configget.go
 // Author: Hadi Cahyadi <cumulus13@gmail.com>
+// Homepage: github.com/cumulus13/go-config-get
 // Date: 2026-04-27
 // Description: Package configget provides cross-platform configuration file discovery,
 // License: MIT
+// Version: 1.0.10
+// Tag: 1.0.10
 
 // Package configget provides cross-platform configuration file discovery,
 // loading, and value retrieval.
@@ -47,6 +50,8 @@ import (
 	"github.com/cumulus13/go-config-get/internal/cast"
 	"github.com/cumulus13/go-config-get/internal/parser"
 	"github.com/cumulus13/go-config-get/internal/platform"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 const Version = "1.0.0"
@@ -375,6 +380,30 @@ func (c *ConfigGet) Data() (parser.Data, error) {
 		out[k] = v
 	}
 	return out, nil
+}
+
+func (c *ConfigGet) Unmarshal(target interface{}) error {
+	data, err := c.Data()
+	if err != nil {
+		return err
+	}
+
+	// // inject env override (optional improvement)
+	// for k := range data {
+	// 	if v, ok := os.LookupEnv(strings.ToUpper(k)); ok {
+	// 		data[k] = v
+	// 	}
+	// }
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName: "mapstructure",
+		Result:  target,
+	})
+	if err != nil {
+		return err
+	}
+
+	return decoder.Decode(data)
 }
 
 // Reload forces the config file to be re-read from disk.
