@@ -20,6 +20,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cumulus13/go-config-get/ini"
+	"github.com/cumulus13/go-config-get/yaml"
 )
 
 // Data is the parsed representation of a config file.
