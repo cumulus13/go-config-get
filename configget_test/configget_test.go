@@ -18,9 +18,9 @@ import (
 	"time"
 
 	"github.com/cumulus13/go-config-get/configget"
-	"github.com/cumulus13/go-config-get/cast"
-	"github.com/cumulus13/go-config-get/parser"
-	"github.com/cumulus13/go-config-get/platform"
+	"github.com/cumulus13/go-config-get/internal/cast"
+	"github.com/cumulus13/go-config-get/internal/parser"
+	"github.com/cumulus13/go-config-get/internal/platform"
 )
 
 // ---------------------------------------------------------------------------

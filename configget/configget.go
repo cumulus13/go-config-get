@@ -44,9 +44,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cumulus13/go-config-get/cast"
-	"github.com/cumulus13/go-config-get/parser"
-	"github.com/cumulus13/go-config-get/platform"
+	"github.com/cumulus13/go-config-get/internal/cast"
+	"github.com/cumulus13/go-config-get/internal/parser"
+	"github.com/cumulus13/go-config-get/internal/platform"
 )
 
 const Version = "1.0.0"

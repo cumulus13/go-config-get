@@ -21,6 +21,7 @@ import (
 //   - inline comments (# or ; after value)
 //   - multi-word values
 //   - DEFAULT section
+
 func parseIniFile(path string) (Data, error) {
 	f, err := os.Open(path)
 	if err != nil {
