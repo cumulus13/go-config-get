@@ -24,7 +24,7 @@
 ## Installation
 
 ```bash
-go get github.com/cumulus13/go-config-get/configget
+go get github.com/cumulus13/go-config-get
 ```
 
 Install the CLI:
